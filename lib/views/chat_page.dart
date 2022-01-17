@@ -1,3 +1,5 @@
+import 'package:chatapp/widgets/chat/messages.dart';
+import 'package:chatapp/widgets/chat/new_message.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -32,35 +34,23 @@ class ChatPage extends StatelessWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          FirebaseFirestore.instance
-              .collection("chats/TdhYC3mAboT204YDsluF/messages")
-              .add({"text": "It's a new message"});
-        },
-        child: const Icon(Icons.add),
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection("chats/TdhYC3mAboT204YDsluF/messages")
-            .snapshots(),
-        builder: (ctx, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.hasData) {
-            final documents = snapshot.data!.docs;
-            return ListView.builder(
-              itemCount: documents.length,
-              itemBuilder: (ctx, index) {
-                return Container(
-                  padding: const EdgeInsets.all(8),
-                  child: Text(documents[index]["text"]),
-                );
-              },
-            );
-          }
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        },
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     FirebaseFirestore.instance
+      //         .collection("chats/TdhYC3mAboT204YDsluF/messages")
+      //         .add({"text": "It's a new message"});
+      //   },
+      //   child: const Icon(Icons.add),
+      // ),
+      body: Container(
+        child: Column(
+          children: [
+            Expanded(
+              child: Messages(),
+            ),
+            NewMessage(),
+          ],
+        ),
       ),
     );
   }

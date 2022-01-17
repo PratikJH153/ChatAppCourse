@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:chatapp/widgets/pickers/user_image_picker.dart';
 import 'package:flutter/material.dart';
 
 enum AuthMode {
@@ -11,6 +14,7 @@ class AuthForm extends StatefulWidget {
     String password,
     String username,
     AuthMode authMode,
+    File image,
     BuildContext ctx,
   ) submitFn;
   final bool isLoading;
@@ -25,13 +29,30 @@ class _AuthFormState extends State<AuthForm> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  File? _userImageFile;
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   AuthMode _authMode = AuthMode.signin;
 
-  void _submit() {
+  void _pickedImage(File image) {
+    _userImageFile = image;
+  }
+
+  void _submit(BuildContext ctx) {
     final form = _formKey.currentState;
     FocusScope.of(context).unfocus();
+
+    if (_userImageFile == null && _authMode == AuthMode.signup) {
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        const SnackBar(
+          content: Text("Please pick an image"),
+          backgroundColor: Colors.grey,
+        ),
+      );
+      return;
+    }
+
     if (form!.validate()) {
       form.save();
       widget.submitFn(
@@ -39,6 +60,7 @@ class _AuthFormState extends State<AuthForm> {
         _passwordController.text.trim(),
         _usernameController.text.trim(),
         _authMode,
+        _userImageFile!,
         context,
       );
     }
@@ -78,19 +100,26 @@ class _AuthFormState extends State<AuthForm> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (_authMode == AuthMode.signup)
-                    TextFormField(
-                      key: const ValueKey("username"),
-                      controller: _usernameController,
-                      validator: (value) {
-                        if (value!.isEmpty || value.length < 4) {
-                          return "Please enter at least 4 characters.";
-                        }
-                        return null;
-                      },
-                      keyboardType: TextInputType.name,
-                      decoration: const InputDecoration(
-                        labelText: "Username",
-                      ),
+                    Column(
+                      children: [
+                        UserImagePicker(
+                          _pickedImage,
+                        ),
+                        TextFormField(
+                          key: const ValueKey("username"),
+                          controller: _usernameController,
+                          validator: (value) {
+                            if (value!.isEmpty || value.length < 4) {
+                              return "Please enter at least 4 characters.";
+                            }
+                            return null;
+                          },
+                          keyboardType: TextInputType.name,
+                          decoration: const InputDecoration(
+                            labelText: "Username",
+                          ),
+                        ),
+                      ],
                     ),
                   TextFormField(
                     key: const ValueKey("email"),
@@ -129,7 +158,7 @@ class _AuthFormState extends State<AuthForm> {
                           child: CircularProgressIndicator(),
                         )
                       : ElevatedButton(
-                          onPressed: _submit,
+                          onPressed: () => _submit(context),
                           child: Text(
                             _authMode == AuthMode.signin ? "Login" : "Signup",
                           ),
