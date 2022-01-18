@@ -2,6 +2,7 @@
 
 import 'package:chatapp/views/auth_page.dart';
 import 'package:chatapp/views/chat_page.dart';
+import 'package:chatapp/views/splash_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -42,6 +43,9 @@ class MyApp extends StatelessWidget {
               home: StreamBuilder(
                 stream: FirebaseAuth.instance.authStateChanges(),
                 builder: (ctx, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const SplashPage();
+                  }
                   if (snapshot.hasData) {
                     return const ChatPage();
                   }
